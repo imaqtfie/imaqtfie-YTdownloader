@@ -6,13 +6,15 @@ A simple desktop application to download YouTube videos and playlists with a mod
 
 - 🎥 Download YouTube videos in different qualities
 - 📁 Download entire playlists
-- 🎵 Extract audio only (MP3, M4A)
+- 🎵 Extract audio only (M4A, MP3, Opus, AAC)
+- 🎬 Multiple video containers (MP4, WebM)
 - 🔄 Batch download mode
 - 🍪 Cookie management for private videos
 - 🎨 Modern PyQt6 interface
 - 📱 Auto-paste from clipboard
 - 📊 Download progress tracking
 - 🔧 Auto-updater for dependencies
+- ⚙️ Advanced format selection with quality options
 
 ## Requirements
 
@@ -43,13 +45,14 @@ A simple desktop application to download YouTube videos and playlists with a mod
 
 1. **Single Video:** Paste YouTube URL and click Download
 2. **Playlist:** Paste playlist URL and use Batch Mode
-3. **Audio Only:** Check "Audio Only" option
-4. **Quality:** Choose from available formats
+3. **Audio Only:** Check "Audio Only" option with format choice (M4A, MP3, Opus, AAC)
+4. **Video Quality:** Choose from available resolutions (360p, 720p, 1080p, etc.)
+5. **Advanced Format:** Use format selector for custom container and quality options
 
 ## Supported Sites
 
 - YouTube (videos, playlists, live streams)
-- Other sites supported by yt-dlp
+- Other sites supported by yt-dlp (varies by site)
 
 ## License
 
