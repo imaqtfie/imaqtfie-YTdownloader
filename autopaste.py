@@ -4,11 +4,9 @@ from PyQt6.QtWidgets import QApplication
 
 
 class AutoPasteManager(QObject):
-    """
-    Manages automatic clipboard monitoring and URL detection for YouTube links
-    """
-    url_detected = pyqtSignal(str)  # Emitted when a new YouTube URL is detected
-    clipboard_changed = pyqtSignal(str)  # Emitted when clipboard content changes
+    """Manages automatic clipboard monitoring and URL detection."""
+    url_detected = pyqtSignal(str)  # new YouTube URL detected
+    clipboard_changed = pyqtSignal(str)  # clipboard content changed
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -19,7 +17,7 @@ class AutoPasteManager(QObject):
         self.timer.timeout.connect(self.check_clipboard)
         self.check_interval = 500  # Check every 500ms
 
-        # Enhanced YouTube URL patterns with better playlist support
+        # YouTube URL patterns
         self.youtube_patterns = [
             # Regular video URLs
             r'(?:https?://)?(?:www\.)?youtube\.com/watch\?v=[\w-]+(?:&[\w=&-]*)?',
@@ -27,7 +25,7 @@ class AutoPasteManager(QObject):
             r'(?:https?://)?(?:www\.)?youtube\.com/embed/[\w-]+(?:\?[\w=&-]*)?',
             r'(?:https?://)?(?:www\.)?youtube\.com/v/[\w-]+(?:\?[\w=&-]*)?',
 
-            # Playlist URLs - Enhanced patterns
+            # Playlist URLs
             r'(?:https?://)?(?:www\.)?youtube\.com/playlist\?list=[\w-]+(?:&[\w=&-]*)?',
             r'(?:https?://)?(?:www\.)?youtube\.com/watch\?.*list=[\w-]+(?:&[\w=&-]*)?',
             r'(?:https?://)?(?:www\.)?youtube\.com/watch\?.*&list=[\w-]+(?:&[\w=&-]*)?',
@@ -39,7 +37,7 @@ class AutoPasteManager(QObject):
             r'(?:https?://)?(?:m\.)?youtube\.com/watch\?v=[\w-]+(?:&[\w=&-]*)?',
             r'(?:https?://)?(?:m\.)?youtube\.com/playlist\?list=[\w-]+(?:&[\w=&-]*)?',
 
-            # Channel URLs with playlists
+            # Channel URLs
             r'(?:https?://)?(?:www\.)?youtube\.com/channel/[\w-]+/playlists?(?:\?[\w=&-]*)?',
             r'(?:https?://)?(?:www\.)?youtube\.com/c/[\w-]+/playlists?(?:\?[\w=&-]*)?',
             r'(?:https?://)?(?:www\.)?youtube\.com/@[\w-]+/playlists?(?:\?[\w=&-]*)?',
@@ -49,27 +47,27 @@ class AutoPasteManager(QObject):
         ]
 
     def enable_autopaste(self):
-        """Enable automatic clipboard monitoring"""
+        """Enable clipboard monitoring."""
         if not self.is_enabled:
             self.is_enabled = True
             self.last_clipboard_content = self.get_clipboard_text()
             self.timer.start(self.check_interval)
 
     def disable_autopaste(self):
-        """Disable automatic clipboard monitoring"""
+        """Disable clipboard monitoring."""
         if self.is_enabled:
             self.is_enabled = False
             self.timer.stop()
 
     def set_check_interval(self, interval_ms):
-        """Set the clipboard check interval in milliseconds"""
+        """Set clipboard check interval in milliseconds."""
         self.check_interval = max(100, interval_ms)  # Minimum 100ms
         if self.timer.isActive():
             self.timer.stop()
             self.timer.start(self.check_interval)
 
     def get_clipboard_text(self):
-        """Get current clipboard text content"""
+        """Get current clipboard text."""
         try:
             mime_data = self.clipboard.mimeData()
             if mime_data.hasText():
@@ -79,24 +77,24 @@ class AutoPasteManager(QObject):
         return ""
 
     def check_clipboard(self):
-        """Check clipboard for changes and YouTube URLs"""
+        """Check clipboard for changes and YouTube URLs."""
         if not self.is_enabled:
             return
 
         current_content = self.get_clipboard_text()
 
-        # Check if clipboard content has changed
+        # Check if content changed
         if current_content != self.last_clipboard_content:
             self.last_clipboard_content = current_content
             self.clipboard_changed.emit(current_content)
 
-            # Check if the new content contains a YouTube URL
+            # Check for YouTube URL
             youtube_url = self.extract_youtube_url(current_content)
             if youtube_url:
                 self.url_detected.emit(youtube_url)
 
     def extract_youtube_url(self, text):
-        """Extract YouTube URL from text with enhanced playlist detection"""
+        """Extract YouTube URL from text."""
         if not text:
             return None
 

@@ -7,9 +7,9 @@ from urllib.parse import urlparse, parse_qs
 
 
 class PlaylistInfoExtractor(QThread):
-    """Extract only basic playlist information (count, title) quickly"""
-    playlist_info_extracted = pyqtSignal(dict)  # Basic playlist info
-    extraction_failed = pyqtSignal(str)  # error_message
+    """Extract basic playlist information quickly."""
+    playlist_info_extracted = pyqtSignal(dict)  # playlist info
+    extraction_failed = pyqtSignal(str)  # error message
 
     def __init__(self, url, max_items: int | None = None):
         super().__init__()
@@ -18,7 +18,7 @@ class PlaylistInfoExtractor(QThread):
 
     def run(self):
         try:
-            # Single pass: extract only the first N entries (flat) for efficiency
+            # Extract first N entries efficiently
             ydl_opts_full = {
                 'extract_flat': True,
                 'quiet': True,
@@ -31,7 +31,7 @@ class PlaylistInfoExtractor(QThread):
                 }
             }
             if self.max_items is not None:
-                # yt-dlp supports playlist range via playliststart/playlistend options
+                # Set playlist range
                 ydl_opts_full['playliststart'] = 1
                 ydl_opts_full['playlistend'] = int(self.max_items)
 
@@ -42,7 +42,7 @@ class PlaylistInfoExtractor(QThread):
                 self.extraction_failed.emit("This is a single video, not a playlist")
                 return
 
-            # Build compact list of entry URLs/IDs to avoid re-querying later
+            # Build entry URLs list
             entry_urls = []
             try:
                 for e in full_info.get('entries', []) or []:
@@ -56,7 +56,7 @@ class PlaylistInfoExtractor(QThread):
             except Exception:
                 entry_urls = []
 
-            # Try to get the true total count from yt-dlp (not just the trimmed subset)
+            # Get total count
             total_count = None
             try:
                 total_count = (
@@ -67,7 +67,7 @@ class PlaylistInfoExtractor(QThread):
             except Exception:
                 total_count = None
 
-            # Determine if this is a YouTube Mix (list=RD...)
+            # Check if YouTube Mix
             try:
                 parsed = urlparse(self.url)
                 qs = parse_qs(parsed.query)
@@ -83,7 +83,7 @@ class PlaylistInfoExtractor(QThread):
                 'title': full_info.get('title', 'Unknown Playlist'),
                 'uploader': full_info.get('uploader', 'Unknown Channel'),
                 'video_count': int(total_count) if isinstance(total_count, int) and total_count > 0 else len(entry_urls),
-                'url': self.url,  # Store original playlist URL
+                'url': self.url,
                 'id': full_info.get('id', ''),
                 'entries': entry_urls,
                 'list_id': list_id_from_url,
@@ -97,17 +97,15 @@ class PlaylistInfoExtractor(QThread):
 
 
 class BatchModeManager(QObject):
-    """
-    Enhanced batch mode manager with sequential playlist processing
-    """
-    batch_status_changed = pyqtSignal(bool)  # True when batch mode is enabled
-    batch_progress_updated = pyqtSignal(int, int)  # current_item, total_items
-    batch_completed = pyqtSignal(int, int)  # successful_downloads, total_downloads
-    playlist_detected = pyqtSignal(dict)  # playlist_info
-    playlist_loading = pyqtSignal(str)  # status_message
-    queue_updated = pyqtSignal()  # Emitted when queue content/order changes
-    queue_limit_reached = pyqtSignal(int)  # Emitted when queue limit is reached (current_size)
-    queue_limit_warning = pyqtSignal(int, int)  # Emitted when approaching limit (current_size, limit)
+    """Enhanced batch mode manager with sequential playlist processing."""
+    batch_status_changed = pyqtSignal(bool)  # batch mode enabled
+    batch_progress_updated = pyqtSignal(int, int)  # current, total
+    batch_completed = pyqtSignal(int, int)  # successful, total
+    playlist_detected = pyqtSignal(dict)  # playlist info
+    playlist_loading = pyqtSignal(str)  # status message
+    queue_updated = pyqtSignal()  # queue changed
+    queue_limit_reached = pyqtSignal(int)  # limit reached
+    queue_limit_warning = pyqtSignal(int, int)  # approaching limit
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -124,11 +122,10 @@ class BatchModeManager(QObject):
             'audio_override': None,
         }
 
-        # Playlist support - store minimal info
+        # Playlist support
         self.extractor = None
         self.current_playlist_info = None
         self.playlist_current_index = 0
-        # Persisted cap when user chooses to trim
         self.playlist_max_items = None
 
     def is_playlist_url(self, url):
@@ -144,7 +141,7 @@ class BatchModeManager(QObject):
             if 'youtube.com' in host and '/playlist' in path and list_id:
                 return True
             if 'youtube.com' in host and '/watch' in path and list_id:
-                # Treat both normal playlists and Mix (RD...) as playlists
+                # Treat playlists and Mix as playlists
                 return True
             return False
         except Exception:
@@ -157,8 +154,8 @@ class BatchModeManager(QObject):
 
         self.playlist_loading.emit("Getting playlist information...")
 
-        # Start extraction in background - only basic info
-        # Compute an effective cap: use the smaller of queue_limit and any persisted cap
+        # Start extraction in background
+        # Compute effective cap
         eff_cap = None
         try:
             if isinstance(queue_limit, int) and queue_limit > 0:
@@ -184,11 +181,10 @@ class BatchModeManager(QObject):
         if not self.is_batch_mode:
             self.enable_batch_mode()
 
-        # Instead of adding all videos to queue, we'll generate them on-demand
-        # Clear any existing queue and prepare for sequential processing
+        # Generate videos on-demand
         self.batch_queue = []
 
-        # Add placeholder entries for playlist videos
+        # Add placeholder entries
         try:
             total = int(playlist_info.get('video_count', 0))
         except Exception:

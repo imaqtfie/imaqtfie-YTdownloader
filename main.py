@@ -17,7 +17,7 @@ from log import LogManager, LogDialog
 from cookie_manager import show_cookie_detection_dialog, show_cookie_help_dialog, auto_detect_cookies, test_cookies
 from format_dialog import FormatChooserDialog
 
-# Import the auto-updater
+# Auto-updater import
 try:
     from autoupdate import show_updater_dialog, check_and_install_dependencies, UpdaterDialog
     UPDATER_AVAILABLE = True
@@ -31,16 +31,14 @@ class EnhancedController:
         self.ui = MainUI()
         self.settings = AppSettings()
 
-        # Guard to prevent modal conflicts when Choose Format dialog is open
+        # Dialog state guards
         self._format_dialog_active = False
         self._deferred_playlist_info_prompt = None
         self._block_batch_after_cancel = False
-        # Update flow state: False = not ready (will check), True = ready (will start)
         self._updates_ready = False
-        # Allow opening updater even if up-to-date after a check
         self._can_open_updater_manually = False
 
-        # Ensure local ./bin is on PATH so yt-dlp/FFmpeg are discoverable on all OSes
+        # Add bin directory to PATH for yt-dlp/FFmpeg
         try:
             bin_dir = Path("./bin")
             bin_dir.mkdir(exist_ok=True)
@@ -51,25 +49,19 @@ class EnhancedController:
             # Keep running even if PATH update fails
             pass
 
-        # Set default download path to user's Downloads folder (cross-platform)
+        # Set default download path
         self.set_default_download_path()
 
-        # Connect update button if updater is available (two-step flow)
+        # Setup auto-updater
         if UPDATER_AVAILABLE:
             try:
                 self.ui.update_button.clicked.connect(self.on_update_button_clicked)
-                # Initial tooltip
-                try:
-                    self.ui.update_button.setToolTip("Check for updates")
-                except Exception:
-                    pass
-                # Pre-create updater dialog for instant show
+                self.ui.update_button.setToolTip("Check for updates")
+                
+                # Pre-create updater dialog
                 try:
                     self._updater_dialog = UpdaterDialog(self.ui, install_dir="./bin")
-                    try:
-                        self._updater_dialog.hide()
-                    except Exception:
-                        pass
+                    self._updater_dialog.hide()
                 except Exception:
                     self._updater_dialog = None
             except Exception:
@@ -78,24 +70,19 @@ class EnhancedController:
             self.ui.update_button.setEnabled(False)
             self.ui.update_button.setToolTip("Auto-updater not available")
         
-        # Initialize logging system
+        # Initialize logging
         self.log_manager = LogManager(max_realtime_logs=200, max_history_entries=30)
         self.log_dialog = LogDialog(self.log_manager, self.ui, on_retry=self._retry_from_history)
         
-        # Check for updates on startup (after log manager is ready)
+        # Check for updates on startup
         self.check_and_show_update_warning()
 
-        # Connect logs button to show dialog
+        # Connect UI buttons
         self.ui.logs_button.clicked.connect(self.show_logs)
-        # Leave logs button as text-only; UI handles styling
-        # Connect shutdown button menu
         if hasattr(self.ui, 'shutdown_button'):
             self._init_shutdown_menu()
-            # UI sets shutdown icon and size
-        # Connect settings button
         if hasattr(self.ui, 'settings_button'):
             self.ui.settings_button.clicked.connect(self.show_settings)
-            # UI sets settings icon and size
             
         # Connect test cookies button
         if hasattr(self.ui, 'test_cookies_button'):
@@ -111,11 +98,9 @@ class EnhancedController:
         self.batch_manager = BatchModeManager()
         self.autopaste_manager = AutoPasteManager()
 
-        # Connect original signals
+        # Connect UI signals
         self.ui.download_button.clicked.connect(self.start_download)
         self.ui.cancel_button.clicked.connect(self.cancel_download)
-
-        # Add new UI controls for batch mode and autopaste
         self.setup_enhanced_ui()
 
         # Connect batch mode signals
@@ -123,34 +108,22 @@ class EnhancedController:
         self.batch_manager.batch_progress_updated.connect(self.on_batch_progress_updated)
         self.batch_manager.queue_limit_reached.connect(self.on_queue_limit_reached)
         self.batch_manager.queue_limit_warning.connect(self.on_queue_limit_warning)
-
-        # ADD THESE PLAYLIST SIGNAL CONNECTIONS:
         self.batch_manager.playlist_detected.connect(self.on_playlist_detected)
         self.batch_manager.playlist_loading.connect(self.on_playlist_loading)
 
         # Connect autopaste signals
         self.autopaste_manager.url_detected.connect(self.on_url_detected)
 
-        # Check for updates on startup (but don't auto-update)
+        # Check for updates on startup
         self.check_for_updates_on_startup()
 
-        # Defer cookie management until after UI shows to avoid blocking startup
-        # (scheduled in __main__) 
-
-        # Load default settings into the UI
+        # Load default settings
         self.ui.load_default_settings(self.settings)
 
-        # Don't show the UI immediately - splash screen will handle that
-        # self.ui.show()
-
-        # Track download state
+        # Initialize state variables
         self.is_downloading = False
-
-        # Track file size info
         self.total_file_size = 0
         self.downloaded_size = 0
-
-        # Animation refs for Download button glow
         self._dl_glow_effect = None
         self._dl_glow_anim = None
 
@@ -158,7 +131,7 @@ class EnhancedController:
         self.log_manager.log("INFO", "YouTube Downloader started")
 
     def set_default_download_path(self):
-        """Set default download path to the user's Downloads folder on all OSes."""
+        """Set default download path to user's Downloads folder."""
         try:
             default_path = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DownloadLocation)
 
@@ -175,13 +148,13 @@ class EnhancedController:
             self.ui.path_input.setText(str(Path.cwd()))
 
     def check_for_updates_on_startup(self):
-        """Check for updates on startup and show warning if needed"""
+        """Check for updates on startup."""
         if UPDATER_AVAILABLE:
             # Check for updates after a short delay (reduced from 2000ms to 500ms)
             QTimer.singleShot(500, lambda: self.check_and_show_update_warning(arm_button=False))
 
     def check_and_show_update_warning(self, arm_button: bool = True):
-        """Check if updates are available and update button display - ENHANCED"""
+        """Check for available updates and update button display."""
         try:
             if UPDATER_AVAILABLE:
                 # Show checking state

@@ -12,12 +12,12 @@ from settings import AppSettings
 
 
 def _ffmpeg_candidates():
-    """Return a list of ffmpeg executable candidates to try, cross-platform."""
+    """Return ffmpeg executable candidates to try."""
     candidates = []
     bin_dir = Path('./bin').resolve()
     system = platform.system().lower()
 
-    # Prefer bundled ffmpeg in ./bin if present
+    # Prefer bundled ffmpeg
     if system == 'windows':
         candidates.append(str(bin_dir / 'ffmpeg.exe'))
         candidates.append('ffmpeg.exe')
@@ -29,7 +29,7 @@ def _ffmpeg_candidates():
 
 
 def check_ffmpeg():
-    """Check if FFmpeg is available on the system (try bundled then PATH)."""
+    """Check if FFmpeg is available."""
     for exe in _ffmpeg_candidates():
         try:
             subprocess.run([exe, '-version'], capture_output=True, check=True)
@@ -40,9 +40,7 @@ def check_ffmpeg():
 
 
 def convert_to_m4a(file_path):
-    """
-    Converts an audio file to .m4a using FFmpeg and deletes the original file.
-    """
+    """Convert audio file to .m4a using FFmpeg."""
     if not check_ffmpeg():
         print("FFmpeg not found. Skipping conversion to M4A.")
         return
@@ -50,11 +48,11 @@ def convert_to_m4a(file_path):
     base, ext = os.path.splitext(file_path)
     output_path = f"{base}.m4a"
 
-    # If already m4a, skip
+    # Skip if already m4a
     if ext.lower() == '.m4a':
         return
 
-    # Use the first working ffmpeg candidate
+    # Find working ffmpeg
     ffmpeg_exe = None
     for exe in _ffmpeg_candidates():
         try:
@@ -91,7 +89,7 @@ class DownloadThread(QThread):
     download_progress = pyqtSignal(str, str)  # percentage, speed
     download_failed = pyqtSignal(str)  # error message
     finished = pyqtSignal()
-    retry_info = pyqtSignal(str)  # retry status messages
+    retry_info = pyqtSignal(str)  # retry status
 
     def __init__(self, url, resolution, download_subs, download_path=None, log_manager=None, preferred_container: str | None = None):
         super().__init__()
