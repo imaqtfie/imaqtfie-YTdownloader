@@ -1,2 +1,56 @@
-# imaqtfie-YTdownloader
-a python program that used ytdlp and ffmpeg to download and compile youtube videos
+# YouTube Downloader
+
+A simple desktop application to download YouTube videos and playlists with a modern GUI.
+
+## Features
+
+- 🎥 Download YouTube videos in different qualities
+- 📁 Download entire playlists
+- 🎵 Extract audio only (MP3, M4A)
+- 🔄 Batch download mode
+- 🍪 Cookie management for private videos
+- 🎨 Modern PyQt6 interface
+- 📱 Auto-paste from clipboard
+- 📊 Download progress tracking
+- 🔧 Auto-updater for dependencies
+
+## Requirements
+
+- Python 3.7+
+- PyQt6
+- yt-dlp
+- FFmpeg
+
+## Quick Start
+
+1. **Install Python dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Download required binaries:**
+   - [FFmpeg](https://ffmpeg.org/download.html)
+   - [yt-dlp](https://github.com/yt-dlp/yt-dlp/releases)
+   
+   Place them in the `bin/` folder
+
+3. **Run the application:**
+   ```bash
+   python main.py
+   ```
+
+## Usage
+
+1. **Single Video:** Paste YouTube URL and click Download
+2. **Playlist:** Paste playlist URL and use Batch Mode
+3. **Audio Only:** Check "Audio Only" option
+4. **Quality:** Choose from available formats
+
+## Supported Sites
+
+- YouTube (videos, playlists, live streams)
+- Other sites supported by yt-dlp
+
+## License
+
+Open source project - feel free to use and modify!
