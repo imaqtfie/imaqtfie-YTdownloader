@@ -1,0 +1,6 @@
+PyQt6>=6.4.0
+yt-dlp>=2023.12.30
+browser-cookie3>=0.19.1
+requests>=2.31.0
+packaging>=23.0
+cryptography>=41.0.0
