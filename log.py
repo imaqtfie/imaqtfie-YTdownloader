@@ -265,8 +265,8 @@ class LogDialog(QDialog):
         # Set SVG icons for tabs if assets exist
         try:
             from theme import load_svg_icon
-            _rt_icon = load_svg_icon("assets/icons/real-time logs.svg", None, 18)
-            _hist_icon = load_svg_icon("assets/icons/download history.svg", None, 18)
+            _rt_icon = load_svg_icon("assets/icons/logs-realtime.svg", None, 18)
+            _hist_icon = load_svg_icon("assets/icons/logs-history.svg", None, 18)
             self.tabs.setTabIcon(0, _rt_icon)
             self.tabs.setTabIcon(1, _hist_icon)
         except Exception:
@@ -816,7 +816,7 @@ class LogDialog(QDialog):
             date_icon_label = QLabel()
             try:
                 from theme import load_svg_icon
-                _cal_icon = load_svg_icon("assets/icons/calendar.svg", None, 14)
+                _cal_icon = load_svg_icon("assets/icons/common-calendar.svg", None, 14)
                 date_icon_label.setPixmap(_cal_icon.pixmap(14, 14))
             except Exception:
                 date_icon_label.setText("📅")
@@ -861,7 +861,7 @@ class LogDialog(QDialog):
                     audio_icon_label = QLabel()
                     try:
                         from theme import load_svg_icon
-                        audio_icon = load_svg_icon("assets/icons/audio.svg", None, 14)
+                        audio_icon = load_svg_icon("assets/icons/common-audio.svg", None, 14)
                         audio_icon_label.setPixmap(audio_icon.pixmap(14, 14))
                     except Exception:
                         audio_icon_label.setText("Audio")

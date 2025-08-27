@@ -399,7 +399,7 @@ QPushButton[objectName="clear_queue_button"]:pressed {
         top_bar_layout.setContentsMargins(0, 0, 0, 5)  # Minimal margins
         
         # Settings button (gear) next to update
-        self.settings_button = IconButton("assets/icons/settings.svg", base_icon_px=32, hover_icon_px=40, effect_color=QColor(99, 102, 241))
+        self.settings_button = IconButton("assets/icons/common-settings.svg", base_icon_px=32, hover_icon_px=40, effect_color=QColor(99, 102, 241))
         self.settings_button.setFixedSize(48, 48)
         try:
             from PyQt6.QtWidgets import QSizePolicy as _QSizePolicy
@@ -653,12 +653,12 @@ QPushButton[objectName="clear_queue_button"]:pressed {
         # Removed duplicate section
         
         # Add a small test cookies button (animated)
-        self.test_cookies_button = IconButton("assets/icons/search.svg", base_icon_px=20, hover_icon_px=26, effect_color=QColor(99, 102, 241))
+        self.test_cookies_button = IconButton("assets/icons/common-search.svg", base_icon_px=20, hover_icon_px=26, effect_color=QColor(99, 102, 241))
         self.test_cookies_button.setFixedSize(32, 32)
         self.test_cookies_button.setToolTip("Test current cookies")
         
         # Add a refresh cookies button (animated)
-        self.refresh_cookies_button = IconButton("assets/icons/refresh.svg", base_icon_px=20, hover_icon_px=26, effect_color=QColor(99, 102, 241))
+        self.refresh_cookies_button = IconButton("assets/icons/common-refresh.svg", base_icon_px=20, hover_icon_px=26, effect_color=QColor(99, 102, 241))
         self.refresh_cookies_button.setFixedSize(32, 32)
         self.refresh_cookies_button.setToolTip("Refresh cookie detection")
         
@@ -706,7 +706,7 @@ QPushButton[objectName="clear_queue_button"]:pressed {
         logs_layout.setContentsMargins(0, 8, 0, 0)
 
         # Logs button as animated icon-only (SVG only)
-        self.logs_button = IconButton("assets/icons/logs.svg", base_icon_px=32, hover_icon_px=40, effect_color=QColor(99, 102, 241))
+        self.logs_button = IconButton("assets/icons/common-logs.svg", base_icon_px=32, hover_icon_px=40, effect_color=QColor(99, 102, 241))
         try:
             from PyQt6.QtWidgets import QSizePolicy as _QSizePolicy
             self.logs_button.setSizePolicy(_QSizePolicy.Policy.Fixed, _QSizePolicy.Policy.Fixed)
@@ -717,7 +717,7 @@ QPushButton[objectName="clear_queue_button"]:pressed {
         logs_layout.addWidget(self.logs_button)
         logs_layout.addStretch()
         # Shutdown (power) button with red-tinted glow
-        self.shutdown_button = IconButton("assets/icons/shutdown.svg", base_icon_px=32, hover_icon_px=40, effect_color=QColor(239, 68, 68))
+        self.shutdown_button = IconButton("assets/icons/common-shutdown.svg", base_icon_px=32, hover_icon_px=40, effect_color=QColor(239, 68, 68))
         self.shutdown_button.setFixedSize(48, 48)
         try:
             from PyQt6.QtWidgets import QSizePolicy as _QSizePolicy
@@ -741,10 +741,10 @@ QPushButton[objectName="clear_queue_button"]:pressed {
         self._activity_movie = None
         # Animation assets - using animated SVG support!
         self._downloading_assets = [
-            "assets/icons/downloading_animation.svg"
+            "assets/icons/common-downloading-animation.svg"
         ]
         self._retrying_assets = [
-            "assets/icons/retrying_animation.svg"
+            "assets/icons/common-retrying-animation.svg"
         ]
         
         # Initialize animation timer for fallback animation
@@ -755,7 +755,7 @@ QPushButton[objectName="clear_queue_button"]:pressed {
     def create_update_button_layout(self):
         """Minimal update button - clean and simple"""
         # Remove the QFrame container and use the button directly
-        self.update_button = IconButton("assets/icons/updated.svg", base_icon_px=36, hover_icon_px=46, effect_color=QColor(99, 102, 241))
+        self.update_button = IconButton("assets/icons/common-updated.svg", base_icon_px=36, hover_icon_px=46, effect_color=QColor(99, 102, 241))
         self.update_button.setFixedSize(56, 56)
         try:
             from PyQt6.QtWidgets import QSizePolicy as _QSizePolicy
@@ -812,7 +812,7 @@ QPushButton[objectName="clear_queue_button"]:pressed {
             # show updated icon
             try:
                 from theme import load_svg_icon
-                self.update_button.setIcon(load_svg_icon("assets/icons/updated.svg", None, self.update_button.iconSize().width()))
+                self.update_button.setIcon(load_svg_icon("assets/icons/common-updated.svg", None, self.update_button.iconSize().width()))
             except Exception:
                 pass
         elif state == "update_available":
@@ -822,7 +822,7 @@ QPushButton[objectName="clear_queue_button"]:pressed {
             # show warning icon when updates are available (per request)
             try:
                 from theme import load_svg_icon
-                self.update_button.setIcon(load_svg_icon("assets/icons/warning.svg", None, self.update_button.iconSize().width()))
+                self.update_button.setIcon(load_svg_icon("assets/icons/common-warning.svg", None, self.update_button.iconSize().width()))
             except Exception:
                 pass
         else:

@@ -301,7 +301,7 @@ class SettingsDialog(QDialog):
         try:
             from theme import get_palette, load_svg_icon
             _p = get_palette()
-            info_btn.setIcon(load_svg_icon("assets/icons/info.svg", None, 18))
+            info_btn.setIcon(load_svg_icon("assets/icons/common-info.svg", None, 18))
             info_btn.setIconSize(QSize(18, 18))
             info_btn.setText("")
         except Exception:
@@ -1142,6 +1142,10 @@ class InformationDialog(QDialog):
         ico_download = _icon_img('download', '📥')
         ico_lightbulb = _icon_img('lightbulb', '💡')
         ico_wrench = _icon_img('wrench', '🔧')
+        # Newly added icons
+        ico_theme = _icon_img('appearance-theme', '🎨')
+        ico_playlist = _icon_img('playlists-subfolder', '📁')
+        ico_auth = _icon_img('authentication-cookies', '🍪')
 
         html = f"""
         <h3 style="color: #1e293b; margin-top: 0;">{ico_target}Throttling Settings</h3>
@@ -1188,6 +1192,15 @@ class InformationDialog(QDialog):
         <p><b>Skip existing files:</b> Don't re-download files that already exist in the target folder. Saves time and bandwidth.</p>
         <p><b>Auto-resume downloads:</b> Automatically resume interrupted downloads when possible. Useful for large files or unstable connections.</p>
         
+        <h3 style="color: #1e293b;">{ico_theme}Appearance / Theme</h3>
+        <p><b>Theme:</b> Choose between Default, YouTube, and Dark themes. This changes the app's colors and is applied immediately after saving. You can always switch back later.</p>
+
+        <h3 style="color: #1e293b;">{ico_playlist}Playlists Subfolder</h3>
+        <p><b>Save playlists into a separate subfolder:</b> When enabled, items from a playlist are saved under <code>…/Playlists/&lt;Playlist Title&gt;/</code> inside your chosen download folder to keep things organized.</p>
+
+        <h3 style="color: #1e293b;">{ico_auth}Authentication / Cookies</h3>
+        <p><b>Cookies:</b> Opens the cookies manager to import or detect your browser cookies. Use this if videos require login (age-restricted, private, or region-locked). The app will use these cookies for yt-dlp requests.</p>
+
         <p style="background-color: #fef3c7; padding: 8px; border-radius: 4px; border-left: 4px solid #f59e0b;">
         <b>{ico_lightbulb}Tip:</b> These settings help make downloads more reliable and less likely to be blocked. 
         Start with default values and only adjust if you experience issues.

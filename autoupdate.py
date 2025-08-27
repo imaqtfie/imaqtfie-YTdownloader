@@ -87,7 +87,7 @@ class LogWindow(QDialog):
         self.setup_ui()
         try:
             from theme import load_svg_icon
-            self.setWindowIcon(load_svg_icon("assets/icons/auto-updater.svg", None, 20))
+            self.setWindowIcon(load_svg_icon("assets/icons/updater-app-legacy.svg", None, 20))
         except Exception:
             pass
 
@@ -160,7 +160,11 @@ class LogWindow(QDialog):
         header_icon = QLabel()
         try:
             from theme import load_svg_icon
-            _hi = load_svg_icon("assets/icons/update-progress-updater.svg", None, 16)
+            # Try preferred name then fallbacks to match assets
+            try:
+                _hi = load_svg_icon("assets/icons/updater-view-logs.svg", None, 16)
+            except Exception:
+                _hi = load_svg_icon("assets/icons/updater-progress.svg", None, 16)
             header_icon.setPixmap(_hi.pixmap(16, 16))
         except Exception:
             pass
@@ -1002,9 +1006,9 @@ class UpdaterDialog(QDialog):
             from theme import load_svg_icon
             # Prefer newly added autoupdater-updater.svg if available
             try:
-                self.setWindowIcon(load_svg_icon("assets/icons/autoupdater-updater.svg", None, 24))
+                self.setWindowIcon(load_svg_icon("assets/icons/updater-app.svg", None, 24))
             except Exception:
-                self.setWindowIcon(load_svg_icon("assets/icons/auto-updater.svg", None, 24))
+                self.setWindowIcon(load_svg_icon("assets/icons/updater-app-legacy.svg", None, 24))
         except Exception:
             pass
         self.setMinimumSize(520, 420)
@@ -1313,7 +1317,7 @@ QLabel[objectName="status_default"] {
         title_icon = QLabel()
         try:
             from theme import load_svg_icon
-            _ti = load_svg_icon("assets/icons/autoupdater-updater.svg", None, 22)
+            _ti = load_svg_icon("assets/icons/updater-app.svg", None, 22)
             title_icon.setPixmap(_ti.pixmap(22, 22))
         except Exception:
             pass
@@ -1370,7 +1374,7 @@ QLabel[objectName="status_default"] {
         options_icon = QLabel()
         try:
             from theme import load_svg_icon
-            _oi = load_svg_icon("assets/icons/setting-updater.svg", None, 36)
+            _oi = load_svg_icon("assets/icons/updater-settings.svg", None, 36)
             options_icon.setPixmap(_oi.pixmap(36, 36))
         except Exception:
             pass
@@ -1393,7 +1397,7 @@ QLabel[objectName="status_default"] {
         self.ffmpeg_checkbox.setChecked(True)
         try:
             from theme import load_svg_icon
-            self.ffmpeg_checkbox.setIcon(load_svg_icon("assets/icons/downloading-updater.svg", None, 18))
+            self.ffmpeg_checkbox.setIcon(load_svg_icon("assets/icons/updater-downloading.svg", None, 18))
         except Exception:
             pass
         self.ffmpeg_checkbox.setStyleSheet("""
@@ -1417,7 +1421,7 @@ QLabel[objectName="status_default"] {
         self.ytdlp_checkbox.setChecked(True)
         try:
             from theme import load_svg_icon
-            self.ytdlp_checkbox.setIcon(load_svg_icon("assets/icons/Update yt-dlp,package-updater.svg", None, 18))
+            self.ytdlp_checkbox.setIcon(load_svg_icon("assets/icons/updater-package-ytdlp.svg", None, 18))
         except Exception:
             pass
         self.ytdlp_checkbox.setStyleSheet("""
@@ -1441,7 +1445,7 @@ QLabel[objectName="status_default"] {
         self.browser_cookie3_checkbox.setChecked(True)
         try:
             from theme import load_svg_icon
-            self.browser_cookie3_checkbox.setIcon(load_svg_icon("assets/icons/Update browser-cookie3-updater.svg", None, 18))
+            self.browser_cookie3_checkbox.setIcon(load_svg_icon("assets/icons/updater-package-browser-cookie3.svg", None, 18))
         except Exception:
             pass
         self.browser_cookie3_checkbox.setStyleSheet("""
@@ -1508,7 +1512,7 @@ QLabel[objectName="status_default"] {
             pass
         try:
             from theme import load_svg_icon
-            self.logs_button.setIcon(load_svg_icon("assets/icons/Update Progress-viewlogbtn-updater.svg", None, 18))
+            self.logs_button.setIcon(load_svg_icon("assets/icons/updater-view-logs.svg", None, 18))
         except Exception:
             pass
 
@@ -1534,7 +1538,7 @@ QLabel[objectName="status_default"] {
             pass
         try:
             from theme import load_svg_icon
-            self.start_button.setIcon(load_svg_icon("assets/icons/check-update-updater.svg", None, 18))
+            self.start_button.setIcon(load_svg_icon("assets/icons/updater-check.svg", None, 18))
         except Exception:
             pass
 
@@ -1557,7 +1561,7 @@ QLabel[objectName="status_default"] {
             pass
         try:
             from theme import load_svg_icon
-            self.cancel_button.setIcon(load_svg_icon("assets/icons/cancelling-updater.svg", None, 18))
+            self.cancel_button.setIcon(load_svg_icon("assets/icons/updater-cancelling.svg", None, 18))
         except Exception:
             pass
 
@@ -1580,7 +1584,7 @@ QLabel[objectName="status_default"] {
             pass
         try:
             from theme import load_svg_icon
-            self.close_button.setIcon(load_svg_icon("assets/icons/close-updater.svg", None, 18))
+            self.close_button.setIcon(load_svg_icon("assets/icons/updater-close.svg", None, 18))
         except Exception:
             pass
 
@@ -1692,7 +1696,7 @@ QLabel[objectName="status_default"] {
             try:
                 self.start_button.setText("Start Update")
                 from theme import load_svg_icon
-                self.start_button.setIcon(load_svg_icon("assets/icons/start-update,starting-updater.svg", None, 18))
+                self.start_button.setIcon(load_svg_icon("assets/icons/updater-start.svg", None, 18))
             except Exception:
                 pass
         except Exception as e:
@@ -1823,13 +1827,13 @@ QLabel[objectName="status_default"] {
                 lowered = (text or '').lower()
                 icon_path = None
                 if any(k in lowered for k in ["starting", "checking", "version", "prepare", "select"]):
-                    icon_path = "assets/icons/setting-updater.svg"
+                    icon_path = "assets/icons/updater-settings.svg"
                 if any(k in lowered for k in ["downloading", "extracting", "installing"]):
-                    icon_path = "assets/icons/downloading-updater.svg"
+                    icon_path = "assets/icons/updater-downloading.svg"
                 if any(k in lowered for k in ["failed", "error", "cancel"]):
-                    icon_path = "assets/icons/cancel,failure-updater.svg"
+                    icon_path = "assets/icons/updater-failure.svg"
                 if any(k in lowered for k in ["updated", "up to date", "complete", "success"]):
-                    icon_path = "assets/icons/success-updater.svg"
+                    icon_path = "assets/icons/updater-success.svg"
                 if icon_path:
                     self.setWindowIcon(load_svg_icon(icon_path, None, 24))
             except Exception:
@@ -1889,7 +1893,7 @@ QLabel[objectName="status_default"] {
             # Set final window icon
             try:
                 from theme import load_svg_icon
-                final_icon = "assets/icons/success-updater.svg" if success else "assets/icons/cancel,failure-updater.svg"
+                final_icon = "assets/icons/updater-success.svg" if success else "assets/icons/updater-failure.svg"
                 self.setWindowIcon(load_svg_icon(final_icon, None, 24))
             except Exception:
                 pass
