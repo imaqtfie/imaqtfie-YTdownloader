@@ -49,11 +49,16 @@ A simple desktop application to download YouTube videos and playlists with a mod
 4. **Video Quality:** Choose from available resolutions (360p, 720p, 1080p, etc.)
 5. **Advanced Format:** Use format selector for custom container and quality options
 
+## Reminder
+
+Always use cookies, to prevent interruption if detected by youtube's security. I
+recommend use cookies browser extension to retrive cookies in youtube tab.
+Cookies feature still being updated, so be patient.
+
 ## Supported Sites
 
 - YouTube (videos, playlists, live streams)
-- Other sites supported by yt-dlp (varies by site)
 
 ## License
 
-Open source project - feel free to use and modify!
+Open source project 
