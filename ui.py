@@ -417,16 +417,22 @@ QPushButton[objectName="clear_queue_button"]:pressed {
         self.cookie_status_layout = QHBoxLayout()
         self.cookie_status_layout.setSpacing(8)
         
-        self.cookie_indicator = QLabel("🔒")
-        self.cookie_indicator.setStyleSheet("""
-            QLabel {
-                font-size: 18px;
-                color: #94a3b8;
-                padding: 4px;
-                margin-right: 4px;
-                font-weight: bold;
-            }
-        """)
+        self.cookie_indicator = QLabel()
+        try:
+            from theme import load_svg_icon
+            _lock = load_svg_icon("assets/icons/cookies-locked.svg", None, 18)
+            self.cookie_indicator.setPixmap(_lock.pixmap(18, 18))
+        except Exception:
+            self.cookie_indicator.setText("🔒")
+            self.cookie_indicator.setStyleSheet("""
+                QLabel {
+                    font-size: 18px;
+                    color: #94a3b8;
+                    padding: 4px;
+                    margin-right: 4px;
+                    font-weight: bold;
+                }
+            """)
         self.cookie_indicator.setToolTip("No cookies available")
         self.cookie_indicator.setVisible(True)  # Always visible to show cookie status
         
@@ -834,15 +840,21 @@ QPushButton[objectName="clear_queue_button"]:pressed {
     def update_cookie_status(self, has_cookies=False, browser_name=None, status_details=""):
         """Update the cookie status indicator"""
         if has_cookies:
-            self.cookie_indicator.setText("🔓")
-            self.cookie_indicator.setStyleSheet("""
-                QLabel {
-                    font-size: 18px;
-                    color: #10b981;
-                    padding: 4px;
-                    font-weight: bold;
-                }
-            """)
+            try:
+                from theme import load_svg_icon
+                _open = load_svg_icon("assets/icons/cookies-unlocked.svg", None, 18)
+                self.cookie_indicator.setPixmap(_open.pixmap(18, 18))
+                self.cookie_indicator.setStyleSheet("")
+            except Exception:
+                self.cookie_indicator.setText("🔓")
+                self.cookie_indicator.setStyleSheet("""
+                    QLabel {
+                        font-size: 18px;
+                        color: #10b981;
+                        padding: 4px;
+                        font-weight: bold;
+                    }
+                """)
             
             # Create detailed tooltip
             tooltip_text = f"Cookies active from {browser_name or 'browser'}"
@@ -868,15 +880,21 @@ QPushButton[objectName="clear_queue_button"]:pressed {
             self.cookie_indicator.setVisible(True)
             self.cookie_status_text.setVisible(True)
         else:
-            self.cookie_indicator.setText("🔒")
-            self.cookie_indicator.setStyleSheet("""
-                QLabel {
-                    font-size: 18px;
-                    color: #94a3b8;
-                    padding: 4px;
-                    font-weight: bold;
-                }
-            """)
+            try:
+                from theme import load_svg_icon
+                _lock = load_svg_icon("assets/icons/cookies-locked.svg", None, 18)
+                self.cookie_indicator.setPixmap(_lock.pixmap(18, 18))
+                self.cookie_indicator.setStyleSheet("")
+            except Exception:
+                self.cookie_indicator.setText("🔒")
+                self.cookie_indicator.setStyleSheet("""
+                    QLabel {
+                        font-size: 18px;
+                        color: #94a3b8;
+                        padding: 4px;
+                        font-weight: bold;
+                    }
+                """)
             
             # Create detailed tooltip for no cookies state
             tooltip_text = "No cookies available"
