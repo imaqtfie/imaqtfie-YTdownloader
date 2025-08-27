@@ -151,7 +151,7 @@ class EnhancedController:
         """Check for updates on startup."""
         if UPDATER_AVAILABLE:
             # Check for updates after a short delay (reduced from 2000ms to 500ms)
-            QTimer.singleShot(500, lambda: self.check_and_show_update_warning(arm_button=False))
+            QTimer.singleShot(500, lambda: self.check_and_show_update_warning(arm_button=True))
 
     def check_and_show_update_warning(self, arm_button: bool = True):
         """Check for available updates and update button display."""
@@ -2064,18 +2064,15 @@ You're getting close to your batch queue limit.
                         self._updater_dialog.exec()
                 else:
                     show_updater_dialog(self.ui, install_dir="./bin")
-                # After updater dialog closes, reset button back to check mode
+                # After updater dialog closes, keep it 1-click by arming the button again
                 if hasattr(self.ui, 'update_button') and self.ui.update_button:
                     try:
-                        # Reset tooltip/state after finishing the updater
                         self.ui.update_button.setToolTip("Check for updates")
                     except Exception:
                         pass
-                # Reset readiness and re-check after a moment (do not arm)
-                self._updates_ready = False
-                self._can_open_updater_manually = False
+                # Re-check and arm so the next click opens immediately
                 try:
-                    QTimer.singleShot(300, lambda: self.check_and_show_update_warning(arm_button=False))
+                    QTimer.singleShot(300, lambda: self.check_and_show_update_warning(arm_button=True))
                 except Exception:
                     pass
             else:
