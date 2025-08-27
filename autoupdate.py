@@ -85,6 +85,11 @@ class LogWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setup_ui()
+        try:
+            from theme import load_svg_icon
+            self.setWindowIcon(load_svg_icon("assets/icons/auto-updater.svg", None, 20))
+        except Exception:
+            pass
 
     def setup_ui(self):
         """Setup the log window UI"""
@@ -150,8 +155,16 @@ class LogWindow(QDialog):
         layout.setContentsMargins(12, 12, 12, 12)
         layout.setSpacing(8)
 
-        # Header
-        header_label = QLabel("📋 Update Progress")
+        # Header with icon + text
+        header_row = QHBoxLayout()
+        header_icon = QLabel()
+        try:
+            from theme import load_svg_icon
+            _hi = load_svg_icon("assets/icons/update-progress-updater.svg", None, 16)
+            header_icon.setPixmap(_hi.pixmap(16, 16))
+        except Exception:
+            pass
+        header_label = QLabel("Update Progress")
         header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         header_label.setStyleSheet("""
             font-size: 14px;
@@ -159,7 +172,12 @@ class LogWindow(QDialog):
             color: #a78bfa;
             padding: 4px;
         """)
-        layout.addWidget(header_label)
+        header_row.addStretch()
+        header_row.addWidget(header_icon)
+        header_row.addSpacing(6)
+        header_row.addWidget(header_label)
+        header_row.addStretch()
+        layout.addLayout(header_row)
 
         # Log area
         self.log_area = QTextEdit()
@@ -980,6 +998,15 @@ class UpdaterDialog(QDialog):
     def setup_ui(self):
         """Setup the user interface with improved design"""
         self.setWindowTitle("YouTube Downloader - Auto Updater")
+        try:
+            from theme import load_svg_icon
+            # Prefer newly added autoupdater-updater.svg if available
+            try:
+                self.setWindowIcon(load_svg_icon("assets/icons/autoupdater-updater.svg", None, 24))
+            except Exception:
+                self.setWindowIcon(load_svg_icon("assets/icons/auto-updater.svg", None, 24))
+        except Exception:
+            pass
         self.setMinimumSize(520, 420)
         self.resize(560, 460)  # Slightly larger to accommodate content
         self.setModal(True)
@@ -1281,7 +1308,16 @@ QLabel[objectName="status_default"] {
         header_layout.setContentsMargins(25, 18, 25, 18)
         header_layout.setSpacing(6)
 
-        title_label = QLabel("🔄 Auto Updater")
+        # Title row with icon + text
+        title_row = QHBoxLayout()
+        title_icon = QLabel()
+        try:
+            from theme import load_svg_icon
+            _ti = load_svg_icon("assets/icons/autoupdater-updater.svg", None, 22)
+            title_icon.setPixmap(_ti.pixmap(22, 22))
+        except Exception:
+            pass
+        title_label = QLabel("Auto Updater")
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title_label.setStyleSheet("""
             color: white; 
@@ -1291,6 +1327,12 @@ QLabel[objectName="status_default"] {
             letter-spacing: 0.5px;
             padding: 2px 0px;
         """)
+        # Center icon and text together
+        title_row.addStretch()
+        title_row.addWidget(title_icon)
+        title_row.addSpacing(8)
+        title_row.addWidget(title_label)
+        title_row.addStretch()
 
         subtitle_label = QLabel("Keep your components up to date for optimal performance")
         subtitle_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -1302,7 +1344,7 @@ QLabel[objectName="status_default"] {
             letter-spacing: 0.2px;
         """)
 
-        header_layout.addWidget(title_label)
+        header_layout.addLayout(title_row)
         header_layout.addWidget(subtitle_label)
         layout.addWidget(header_frame)
 
@@ -1323,8 +1365,16 @@ QLabel[objectName="status_default"] {
         options_layout.setContentsMargins(20, 18, 20, 18)
         options_layout.setSpacing(10)
 
-        # Section title
-        options_title = QLabel("🛠️ Select Components to Update")
+        # Section title with icon + text
+        options_title_row = QHBoxLayout()
+        options_icon = QLabel()
+        try:
+            from theme import load_svg_icon
+            _oi = load_svg_icon("assets/icons/setting-updater.svg", None, 36)
+            options_icon.setPixmap(_oi.pixmap(36, 36))
+        except Exception:
+            pass
+        options_title = QLabel("Select Components to Update")
         options_title.setStyleSheet("""
             font-weight: 700;
             color: #1e293b;
@@ -1332,11 +1382,20 @@ QLabel[objectName="status_default"] {
             padding: 0px 0px 8px 0px;
             background: transparent;
         """)
-        options_layout.addWidget(options_title)
+        options_title_row.addWidget(options_icon)
+        options_title_row.addSpacing(8)
+        options_title_row.addWidget(options_title)
+        options_title_row.addStretch()
+        options_layout.addLayout(options_title_row)
 
         # Checkboxes for what to update with improved styling
-        self.ffmpeg_checkbox = QCheckBox("🎬 Update FFmpeg (Video Processing)")
+        self.ffmpeg_checkbox = QCheckBox("Update FFmpeg (Video Processing)")
         self.ffmpeg_checkbox.setChecked(True)
+        try:
+            from theme import load_svg_icon
+            self.ffmpeg_checkbox.setIcon(load_svg_icon("assets/icons/downloading-updater.svg", None, 18))
+        except Exception:
+            pass
         self.ffmpeg_checkbox.setStyleSheet("""
             QCheckBox {
                 color: #1e293b;
@@ -1354,8 +1413,13 @@ QLabel[objectName="status_default"] {
             }
         """)
 
-        self.ytdlp_checkbox = QCheckBox("📦 Update yt-dlp (Video Downloader)")
+        self.ytdlp_checkbox = QCheckBox("Update yt-dlp (Video Downloader)")
         self.ytdlp_checkbox.setChecked(True)
+        try:
+            from theme import load_svg_icon
+            self.ytdlp_checkbox.setIcon(load_svg_icon("assets/icons/Update yt-dlp,package-updater.svg", None, 18))
+        except Exception:
+            pass
         self.ytdlp_checkbox.setStyleSheet("""
             QCheckBox {
                 color: #1e293b;
@@ -1373,8 +1437,13 @@ QLabel[objectName="status_default"] {
             }
         """)
 
-        self.browser_cookie3_checkbox = QCheckBox("🍪 Update browser-cookie3 (Cookie Management)")
+        self.browser_cookie3_checkbox = QCheckBox("Update browser-cookie3 (Cookie Management)")
         self.browser_cookie3_checkbox.setChecked(True)
+        try:
+            from theme import load_svg_icon
+            self.browser_cookie3_checkbox.setIcon(load_svg_icon("assets/icons/Update browser-cookie3-updater.svg", None, 18))
+        except Exception:
+            pass
         self.browser_cookie3_checkbox.setStyleSheet("""
             QCheckBox {
                 color: #1e293b;
@@ -1429,12 +1498,17 @@ QLabel[objectName="status_default"] {
         button_layout.setContentsMargins(0, 10, 0, 0)
 
         # Left side - Logs button
-        self.logs_button = QPushButton("📋 View Logs")
+        self.logs_button = QPushButton("View Logs")
         self.logs_button.setObjectName("logs_button")
         self.logs_button.setFixedSize(140, 40)
         try:
             from theme import button_style
             self.logs_button.setStyleSheet(button_style('info', radius=6, padding='10px 18px'))
+        except Exception:
+            pass
+        try:
+            from theme import load_svg_icon
+            self.logs_button.setIcon(load_svg_icon("assets/icons/Update Progress-viewlogbtn-updater.svg", None, 18))
         except Exception:
             pass
 
@@ -1450,12 +1524,17 @@ QLabel[objectName="status_default"] {
         action_layout = QHBoxLayout()
         action_layout.setSpacing(12)
 
-        self.start_button = QPushButton("🔍 Check Updates")
+        self.start_button = QPushButton("Check Updates")
         self.start_button.setObjectName("start_button")
         self.start_button.setFixedSize(200, 48)
         try:
             from theme import button_style
             self.start_button.setStyleSheet(button_style('success'))
+        except Exception:
+            pass
+        try:
+            from theme import load_svg_icon
+            self.start_button.setIcon(load_svg_icon("assets/icons/check-update-updater.svg", None, 18))
         except Exception:
             pass
 
@@ -1467,13 +1546,18 @@ QLabel[objectName="status_default"] {
         start_shadow.setColor(QColor(34, 197, 94, 80))
         self.start_button.setGraphicsEffect(start_shadow)
 
-        self.cancel_button = QPushButton("❌ Cancel")
+        self.cancel_button = QPushButton("Cancel")
         self.cancel_button.setObjectName("cancel_button")
         self.cancel_button.setFixedSize(130, 45)
         self.cancel_button.setVisible(False)
         try:
             from theme import button_style
             self.cancel_button.setStyleSheet(button_style('danger'))
+        except Exception:
+            pass
+        try:
+            from theme import load_svg_icon
+            self.cancel_button.setIcon(load_svg_icon("assets/icons/cancelling-updater.svg", None, 18))
         except Exception:
             pass
 
@@ -1486,12 +1570,17 @@ QLabel[objectName="status_default"] {
         self.cancel_button.setGraphicsEffect(cancel_shadow)
 
         # Right side - Close button
-        self.close_button = QPushButton("✖️ Close")
+        self.close_button = QPushButton("Close")
         self.close_button.setObjectName("close_button")
         self.close_button.setFixedSize(120, 40)
         try:
             from theme import button_style
             self.close_button.setStyleSheet(button_style('primary', radius=6, padding='10px 18px'))
+        except Exception:
+            pass
+        try:
+            from theme import load_svg_icon
+            self.close_button.setIcon(load_svg_icon("assets/icons/close-updater.svg", None, 18))
         except Exception:
             pass
 
@@ -1601,7 +1690,9 @@ QLabel[objectName="status_default"] {
             # Arm second click to start updating
             self._checked_once = True
             try:
-                self.start_button.setText("🚀 Start Update")
+                self.start_button.setText("Start Update")
+                from theme import load_svg_icon
+                self.start_button.setIcon(load_svg_icon("assets/icons/start-update,starting-updater.svg", None, 18))
             except Exception:
                 pass
         except Exception as e:
@@ -1726,6 +1817,23 @@ QLabel[objectName="status_default"] {
         try:
             if hasattr(self, 'status_label') and self.status_label:
                 self.status_label.setText(text)
+            # Update window icon based on status keywords
+            try:
+                from theme import load_svg_icon
+                lowered = (text or '').lower()
+                icon_path = None
+                if any(k in lowered for k in ["starting", "checking", "version", "prepare", "select"]):
+                    icon_path = "assets/icons/setting-updater.svg"
+                if any(k in lowered for k in ["downloading", "extracting", "installing"]):
+                    icon_path = "assets/icons/downloading-updater.svg"
+                if any(k in lowered for k in ["failed", "error", "cancel"]):
+                    icon_path = "assets/icons/cancel,failure-updater.svg"
+                if any(k in lowered for k in ["updated", "up to date", "complete", "success"]):
+                    icon_path = "assets/icons/success-updater.svg"
+                if icon_path:
+                    self.setWindowIcon(load_svg_icon(icon_path, None, 24))
+            except Exception:
+                pass
         except Exception as e:
             print(f"Warning: Error updating status: {e}")
 
@@ -1777,6 +1885,14 @@ QLabel[objectName="status_default"] {
 
             # Show completion message
             self.show_completion_message(success, message)
+
+            # Set final window icon
+            try:
+                from theme import load_svg_icon
+                final_icon = "assets/icons/success-updater.svg" if success else "assets/icons/cancel,failure-updater.svg"
+                self.setWindowIcon(load_svg_icon(final_icon, None, 24))
+            except Exception:
+                pass
 
         except Exception as e:
             print(f"Warning: Error in update completion: {e}")

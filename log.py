@@ -255,12 +255,22 @@ class LogDialog(QDialog):
         # Real-time logs tab
         self.realtime_tab = QWidget()
         self.setup_realtime_tab()
-        self.tabs.addTab(self.realtime_tab, "📊 Real-time Logs")
+        self.tabs.addTab(self.realtime_tab, "Real-time Logs")
 
         # Download history tab
         self.history_tab = QWidget()
         self.setup_history_tab()
-        self.tabs.addTab(self.history_tab, "📚 Download History")
+        self.tabs.addTab(self.history_tab, "Download History")
+
+        # Set SVG icons for tabs if assets exist
+        try:
+            from theme import load_svg_icon
+            _rt_icon = load_svg_icon("assets/icons/real-time logs.svg", None, 18)
+            _hist_icon = load_svg_icon("assets/icons/download history.svg", None, 18)
+            self.tabs.setTabIcon(0, _rt_icon)
+            self.tabs.setTabIcon(1, _hist_icon)
+        except Exception:
+            pass
 
         layout.addWidget(self.tabs)
 
@@ -791,16 +801,26 @@ class LogDialog(QDialog):
             details1_layout.setSpacing(20)
 
             timestamp_str = entry.get('timestamp')
-            date_text = "📅 Unknown Date"
+            date_text = "Unknown Date"
             if timestamp_str:
                 try:
                     if 'T' in timestamp_str:
                         dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
                     else:
                         dt = datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S')
-                    date_text = f"📅 {dt.strftime('%Y-%m-%d %H:%M:%S')}"
+                    date_text = f"{dt.strftime('%Y-%m-%d %H:%M:%S')}"
                 except (ValueError, TypeError):
-                    date_text = f"📅 {timestamp_str}"
+                    date_text = f"{timestamp_str}"
+
+            # Date row with calendar SVG icon
+            date_icon_label = QLabel()
+            try:
+                from theme import load_svg_icon
+                _cal_icon = load_svg_icon("assets/icons/calendar.svg", None, 14)
+                date_icon_label.setPixmap(_cal_icon.pixmap(14, 14))
+            except Exception:
+                date_icon_label.setText("📅")
+                date_icon_label.setStyleSheet(f"color: {_text}; font-size: 12px; font-weight: 500;")
 
             date_label = QLabel(date_text)
             date_label.setStyleSheet(f"color: {_text}; font-size: 12px; font-weight: 500;")
@@ -808,6 +828,7 @@ class LogDialog(QDialog):
             resolution_label = QLabel(f"{entry.get('resolution', 'Unknown')}")
             resolution_label.setStyleSheet(f"color: {_text}; font-size: 12px; font-weight: 500;")
 
+            details1_layout.addWidget(date_icon_label)
             details1_layout.addWidget(date_label)
             details1_layout.addWidget(resolution_label)
             details1_layout.addStretch()

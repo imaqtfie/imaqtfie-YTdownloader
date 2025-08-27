@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QHBoxLayout, QPushButton, QComboBox, QLineEdit, QCheckBox, QTabWidget, QWidget, QGraphicsOpacityEffect
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QHBoxLayout, QPushButton, QComboBox, QLineEdit, QCheckBox, QTabWidget, QWidget, QGraphicsOpacityEffect, QProgressBar
 from PyQt6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QTimer, QThread, pyqtSignal
 from yt_dlp import YoutubeDL
 from settings import AppSettings
@@ -39,6 +39,13 @@ class FormatChooserDialog(QDialog):
 		self.available_rows = []  # (label, resolution_key, container, size_text)
 		self._loader = None
 		self._cookie_file_for_ydl = self._resolve_cookiefile()
+		# Loading indicator state
+		self._loading_row = None
+		self._loading_label = None
+		self._loading_bar = None
+		self._countdown_label = None
+		self._countdown_timer = None
+		self._countdown_secs = 0
 		# No auto-close timer: dialog stays until user chooses
 		self._build_ui()
 		self._load_formats_async()
@@ -91,6 +98,28 @@ class FormatChooserDialog(QDialog):
 		info = QLabel("Select a resolution and container. Estimates are approximate.")
 		info.setStyleSheet("color: #64748b; font-weight: 600;")
 		layout.addWidget(info)
+
+		# Loading indicator (hidden by default)
+		loading_row = QHBoxLayout()
+		self._loading_label = QLabel("Loading formats…")
+		self._loading_label.setStyleSheet("color: #64748b;")
+		self._loading_bar = QProgressBar()
+		try:
+			self._loading_bar.setRange(0, 0)  # Indeterminate
+			self._loading_bar.setTextVisible(False)
+		except Exception:
+			pass
+		self._countdown_label = QLabel("")
+		self._countdown_label.setStyleSheet("color: #94a3b8;")
+		loading_row.addWidget(self._loading_label)
+		loading_row.addWidget(self._loading_bar)
+		loading_row.addWidget(self._countdown_label)
+		loading_row.addStretch()
+		container_loading = QWidget()
+		container_loading.setLayout(loading_row)
+		layout.addWidget(container_loading)
+		container_loading.hide()
+		self._loading_row = container_loading
 
 		# Tabs for Simple and Advanced
 		self.tabs = QTabWidget()
@@ -204,21 +233,77 @@ class FormatChooserDialog(QDialog):
 		self._populate_rows_from_formats([])
 		# Start background loader
 		try:
+			# Show loading indicator with countdown (30s)
+			if self._loading_row:
+				self._loading_row.show()
+				self._countdown_secs = 30
+				try:
+					self._countdown_label.setText(f"(~{self._countdown_secs}s)")
+				except Exception:
+					pass
+				# Kick off a 1s timer to update countdown
+				if not self._countdown_timer:
+					self._countdown_timer = QTimer(self)
+					self._countdown_timer.timeout.connect(self._tick_countdown)
+				self._countdown_timer.start(1000)
+
 			self._loader = self._FormatLoader(self.url, cookiefile=self._cookie_file_for_ydl)
 			self._loader.result_ready.connect(self._on_formats_loaded)
-			self._loader.failed.connect(lambda _: None)
+			self._loader.failed.connect(self._on_formats_failed)
 			self._loader.start()
+		except Exception:
+			pass
+
+		# Safety timeout to hide indicator even if yt-dlp stalls beyond socket timeout
+		try:
+			QTimer.singleShot(31000, self._stop_loading_indicator)
 		except Exception:
 			pass
 
 	def _on_formats_loaded(self, formats: list):
 		self._formats = formats or []
+		self._stop_loading_indicator()
 		# Rebuild table: clear then populate based on formats
 		try:
 			self.table.setRowCount(0)
 		except Exception:
 			pass
 		self._populate_rows_from_formats(self._formats)
+
+	def _on_formats_failed(self, err: str):
+		# Hide loading UI and keep defaults shown
+		self._stop_loading_indicator()
+		try:
+			self._formats = []
+		except Exception:
+			pass
+
+	def _stop_loading_indicator(self):
+		try:
+			if self._countdown_timer and self._countdown_timer.isActive():
+				self._countdown_timer.stop()
+		except Exception:
+			pass
+		try:
+			if self._countdown_label:
+				self._countdown_label.setText("")
+		except Exception:
+			pass
+		try:
+			if self._loading_row:
+				self._loading_row.hide()
+		except Exception:
+			pass
+
+	def _tick_countdown(self):
+		try:
+			self._countdown_secs = max(0, int(self._countdown_secs) - 1)
+			if self._countdown_label:
+				self._countdown_label.setText(f"(~{self._countdown_secs}s)")
+			if self._countdown_secs <= 0:
+				self._stop_loading_indicator()
+		except Exception:
+			self._stop_loading_indicator()
 
 	def _populate_rows_from_formats(self, formats: list):
 		# Build default list first; then enhance with formats when present

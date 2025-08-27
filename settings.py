@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QDoubleSpinBox,
     QSpinBox, QPushButton, QFrame, QTextEdit, QGroupBox, QScrollArea, QWidget, QLineEdit, QComboBox, QFileDialog
 )
-from PyQt6.QtCore import QSettings, Qt, QDir, QSize
+from PyQt6.QtCore import QSettings, Qt, QDir, QSize, QUrl
 from PyQt6.QtGui import QPalette, QColor, QFont
 from cookie_manager import show_cookies_dialog
 import os
@@ -1073,7 +1073,7 @@ class InformationDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Settings Information")
         self.setModal(True)
-        self.resize(550, 450)
+        self.resize(640, 520)
         
         # Set styling consistent with settings dialog
         self.setStyleSheet("""
@@ -1083,7 +1083,7 @@ class InformationDialog(QDialog):
             }
             QLabel {
                 color: #1e293b;
-                font-size: 12px;
+                font-size: 13px;
             }
             QTextEdit {
                 color: #1e293b;
@@ -1091,7 +1091,7 @@ class InformationDialog(QDialog):
                 border: 2px solid #e2e8f0;
                 border-radius: 8px;
                 padding: 12px;
-                font-size: 12px;
+                font-size: 13px;
                 line-height: 1.4;
             }
             QPushButton {
@@ -1100,7 +1100,7 @@ class InformationDialog(QDialog):
                 border: none;
                 border-radius: 6px;
                 padding: 10px 20px;
-                font-size: 12px;
+                font-size: 13px;
                 font-weight: bold;
                 min-height: 20px;
             }
@@ -1115,27 +1115,49 @@ class InformationDialog(QDialog):
 
         # Title
         title_label = QLabel("Settings Information")
-        title_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #1e293b; margin-bottom: 8px;")
+        title_label.setStyleSheet("font-size: 20px; font-weight: bold; color: #1e293b; margin-bottom: 8px;")
         layout.addWidget(title_label)
 
         # Information text
         info_text = QTextEdit()
         info_text.setReadOnly(True)
-        info_text.setHtml("""
-        <h3 style="color: #1e293b; margin-top: 0;">🎯 Throttling Settings</h3>
+        # Build icon <img> tags from assets, with emoji fallback if missing
+        def _icon_img(name: str, fallback: str) -> str:
+            try:
+                p = os.path.abspath(os.path.join('assets', 'icons', f"{name}.svg"))
+                if os.path.exists(p):
+                    url = QUrl.fromLocalFile(p).toString()
+                    return f"<img src='{url}' width='20' height='20' style='vertical-align: text-bottom; margin-right: 8px;'>"
+            except Exception:
+                pass
+            return fallback + " "
+
+        ico_target = _icon_img('target', '🎯')
+        ico_bolt = _icon_img('bolt', '⚡')
+        ico_stopwatch = _icon_img('stopwatch', '⏱️')
+        ico_refresh = _icon_img('refresh', '🔄')
+        ico_globe = _icon_img('globe', '🌐')
+        ico_gear = _icon_img('gear', '⚙️')
+        ico_clapper = _icon_img('clapperboard', '🎬')
+        ico_download = _icon_img('download', '📥')
+        ico_lightbulb = _icon_img('lightbulb', '💡')
+        ico_wrench = _icon_img('wrench', '🔧')
+
+        html = f"""
+        <h3 style="color: #1e293b; margin-top: 0;">{ico_target}Throttling Settings</h3>
         <p><b>Enable gentle throttling:</b> When enabled, the downloader will use intelligent throttling to avoid being blocked by YouTube's anti-bot measures. This makes downloads more reliable but slightly slower.</p>
         
-        <h3 style="color: #1e293b;">⚡ Rate Limit</h3>
+        <h3 style="color: #1e293b;">{ico_bolt}Rate Limit</h3>
         <p><b>Rate limit (MB/s):</b> Controls the maximum download speed in megabytes per second. Set to 0 for unlimited speed. Lower values are safer but slower.</p>
         
-        <h3 style="color: #1e293b;">⏱️ Pre-download Delay</h3>
+        <h3 style="color: #1e293b;">{ico_stopwatch}Pre-download Delay</h3>
         <p><b>Pre-download delay:</b> A random delay (in seconds) before starting each download. This helps avoid detection by making requests appear more human-like.</p>
         
-        <h3 style="color: #1e293b;">🔄 Between Items Delay</h3>
+        <h3 style="color: #1e293b;">{ico_refresh}Between Items Delay</h3>
         <p><b>Success delay:</b> Delay between successful downloads when processing multiple videos. Keeps a safe interval between requests.</p>
         <p><b>Failure delay:</b> Longer delay after failed downloads before retrying. Gives YouTube's servers time to recover.</p>
         
-        <h3 style="color: #1e293b;">🌐 Advanced Network Settings</h3>
+        <h3 style="color: #1e293b;">{ico_globe}Advanced Network Settings</h3>
         <p><b>Request sleep settings:</b> Fine-tune how the downloader interacts with YouTube's servers:</p>
         <ul>
             <li><b>Sleep interval:</b> Base time to wait between network requests</li>
@@ -1145,7 +1167,7 @@ class InformationDialog(QDialog):
             <li><b>Concurrent fragments:</b> Number of download pieces to download simultaneously (1 is safest)</li>
         </ul>
         
-        <h3 style="color: #1e293b;">⚙️ General Settings</h3>
+        <h3 style="color: #1e293b;">{ico_gear}General Settings</h3>
         <p><b>Default download path:</b> Set a custom folder where videos will be saved by default. Leave empty to use your system's Downloads folder.</p>
         <p><b>Default resolution:</b> Choose the default video quality for new downloads. <b>When you change this setting, the main window's resolution dropdown will update to match your selection the next time you open the settings or after saving.</b></p>
         <p><b>Auto-download subtitles:</b> Automatically check the subtitle option for new downloads.</p>
@@ -1154,12 +1176,12 @@ class InformationDialog(QDialog):
         <p><b>Auto-check updates:</b> Automatically check for yt-dlp updates when the app starts.</p>
         <p><b>Remember window size:</b> Save and restore the window size and position between app sessions.</p>
         
-        <h3 style="color: #1e293b;">🎬 Format Settings</h3>
+        <h3 style="color: #1e293b;">{ico_clapper}Format Settings</h3>
         <p><b>Preferred video format:</b> Choose the video container format (mp4, webm, mkv). MP4 is most compatible.</p>
         <p><b>Preferred audio format:</b> Choose the audio format for audio-only downloads (m4a, mp3, opus, aac). M4A offers good quality and compatibility.</p>
         <p><b>Audio quality:</b> Set the audio bitrate for audio-only downloads. Higher values mean better quality but larger files.</p>
         
-        <h3 style="color: #1e293b;">📥 Download Behavior</h3>
+        <h3 style="color: #1e293b;">{ico_download}Download Behavior</h3>
         <p><b>Retry attempts:</b> Number of times to retry failed downloads before giving up. Higher values increase reliability but may take longer.</p>
         <p><b>Retry delay:</b> Time to wait between retry attempts in seconds. Gives servers time to recover.</p>
         <p><b>Batch queue limit:</b> Maximum number of items allowed in the batch download queue. When autopaste is enabled, this limits how many URLs can be queued. The batch status will show color-coded warnings when approaching the limit.</p>
@@ -1167,14 +1189,15 @@ class InformationDialog(QDialog):
         <p><b>Auto-resume downloads:</b> Automatically resume interrupted downloads when possible. Useful for large files or unstable connections.</p>
         
         <p style="background-color: #fef3c7; padding: 8px; border-radius: 4px; border-left: 4px solid #f59e0b;">
-        <b>💡 Tip:</b> These settings help make downloads more reliable and less likely to be blocked. 
+        <b>{ico_lightbulb}Tip:</b> These settings help make downloads more reliable and less likely to be blocked. 
         Start with default values and only adjust if you experience issues.
         </p>
         
         <p style="background-color: #dbeafe; padding: 8px; border-radius: 4px; border-left: 4px solid #3b82f6;">
-        <b>🔧 Default Button:</b> Click the "Default" button to reset all settings to safe, recommended values.
+        <b>{ico_wrench}Default Button:</b> Click the "Default" button to reset all settings to safe, recommended values.
         </p>
-        """)
+        """
+        info_text.setHtml(html)
         layout.addWidget(info_text)
 
         # Close button
