@@ -1824,10 +1824,25 @@ You're getting close to your batch queue limit.
                     self.current_cookie_browser = browser_name
                     self.log_manager.log("INFO", f"Auto-detected cookies from {browser_name}")
                     # Update UI to show cookies are active with browser name
-                    self.ui.update_cookie_status(True, browser_name, "Auto-detected")
+                    # Include expiry in tooltip/status for at-a-glance visibility (show prominently for ~1 minute)
+                    expiry_note = ""
+                    try:
+                        from cookie_manager import CookieManager
+                        cm = CookieManager()
+                        expiry_ts = cm.get_cookie_expiry(cookie_file)
+                        if expiry_ts:
+                            import datetime
+                            dt = datetime.datetime.fromtimestamp(int(expiry_ts))
+                            days_left = max(0, (dt - datetime.datetime.now()).days)
+                            expiry_note = f"Expires {dt.strftime('%Y-%m-%d %H:%M')} (in {days_left} days)"
+                    except Exception:
+                        expiry_note = ""
+                    status_detail = "Auto-detected" + (f" — {expiry_note}" if expiry_note else "")
+                    self.ui.update_cookie_status(True, browser_name, status_detail)
                     # Force UI update
-                    self.ui.status_label.setText(f"🔓 Cookies detected from {browser_name}")
+                    self.ui.status_label.setText(f"🔓 Cookies detected from {browser_name}" + (f" — {expiry_note}" if expiry_note else ""))
                     self.log_manager.log("SUCCESS", f"Cookie status updated: {browser_name} (Auto-detected)")
+                    # Optionally keep the detailed note visible for ~1 minute (UI already updates label; no timer needed to clear)
                 else:
                     self.log_manager.log("INFO", "No cookies auto-detected")
                     self.ui.update_cookie_status(False, status_details="Auto-detect failed")

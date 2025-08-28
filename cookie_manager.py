@@ -1105,7 +1105,32 @@ class CookiesDialog(QDialog):
                 current = self._settings.get_cookie_file_path() or self._settings.get_json_cookie_file_path()
             if current:
                 ok = test_cookies(current)
-                self.status_label.setText(f"Cookie status: {'✅ Valid' if ok else '❌ Invalid'}")
+                # Try to read expiry for display
+                expiry_text = ""
+                try:
+                    cm = CookieManager()
+                    cookie_path = current
+                    # If JSON, convert to temp Netscape file to read expiry
+                    if isinstance(cookie_path, str) and cookie_path.lower().endswith('.json'):
+                        converted = cm.convert_json_to_yt_dlp_format(cookie_path)
+                        if converted:
+                            expiry_ts = cm.get_cookie_expiry(converted)
+                            try:
+                                os.unlink(converted)
+                            except Exception:
+                                pass
+                        else:
+                            expiry_ts = None
+                    else:
+                        expiry_ts = cm.get_cookie_expiry(cookie_path)
+                    if expiry_ts:
+                        import datetime
+                        dt = datetime.datetime.fromtimestamp(int(expiry_ts))
+                        days_left = max(0, (dt - datetime.datetime.now()).days)
+                        expiry_text = f" — Expires {dt.strftime('%Y-%m-%d %H:%M')} (in {days_left} days)"
+                except Exception:
+                    expiry_text = ""
+                self.status_label.setText(f"Cookie status: {'✅ Valid' if ok else '❌ Invalid'}{expiry_text}")
             else:
                 self.status_label.setText("Cookie status: Not set")
         except Exception:
@@ -1129,7 +1154,20 @@ class CookiesDialog(QDialog):
     def _test_txt(self):
         fp = self.txt_input.text().strip()
         ok = test_cookies(fp)
-        self.status_label.setText(f"Cookie status: {'✅ Valid' if ok else '❌ Invalid'} (.txt)")
+        # Include expiry if available
+        expiry_text = ""
+        try:
+            if ok and fp:
+                cm = CookieManager()
+                expiry_ts = cm.get_cookie_expiry(fp)
+                if expiry_ts:
+                    import datetime
+                    dt = datetime.datetime.fromtimestamp(int(expiry_ts))
+                    days_left = max(0, (dt - datetime.datetime.now()).days)
+                    expiry_text = f" — Expires {dt.strftime('%Y-%m-%d %H:%M')} (in {days_left} days)"
+        except Exception:
+            expiry_text = ""
+        self.status_label.setText(f"Cookie status: {'✅ Valid' if ok else '❌ Invalid'} (.txt){expiry_text}")
 
     def _browse_json(self):
         from PyQt6.QtWidgets import QFileDialog
@@ -1141,7 +1179,26 @@ class CookiesDialog(QDialog):
     def _test_json(self):
         fp = self.json_input.text().strip()
         ok = test_cookies(fp)
-        self.status_label.setText(f"Cookie status: {'✅ Valid' if ok else '❌ Invalid'} (JSON)")
+        # Include expiry if available (convert JSON first)
+        expiry_text = ""
+        try:
+            if ok and fp:
+                cm = CookieManager()
+                converted = cm.convert_json_to_yt_dlp_format(fp)
+                if converted:
+                    expiry_ts = cm.get_cookie_expiry(converted)
+                    try:
+                        os.unlink(converted)
+                    except Exception:
+                        pass
+                    if expiry_ts:
+                        import datetime
+                        dt = datetime.datetime.fromtimestamp(int(expiry_ts))
+                        days_left = max(0, (dt - datetime.datetime.now()).days)
+                        expiry_text = f" — Expires {dt.strftime('%Y-%m-%d %H:%M')} (in {days_left} days)"
+        except Exception:
+            expiry_text = ""
+        self.status_label.setText(f"Cookie status: {'✅ Valid' if ok else '❌ Invalid'} (JSON){expiry_text}")
 
     def _paste_json(self):
         from PyQt6.QtWidgets import QApplication
@@ -1158,13 +1215,44 @@ class CookiesDialog(QDialog):
     def _test_pasted(self):
         data = self.json_input.text().strip()
         ok = test_cookies(data)
-        self.status_label.setText(f"Cookie status: {'✅ Valid' if ok else '❌ Invalid'} (Pasted JSON)")
+        # Include expiry if available (convert JSON string first)
+        expiry_text = ""
+        try:
+            if ok and data and (data.strip().startswith('{') or data.strip().startswith('[')):
+                cm = CookieManager()
+                converted = cm.convert_json_string_to_yt_dlp_format(data)
+                if converted:
+                    expiry_ts = cm.get_cookie_expiry(converted)
+                    try:
+                        os.unlink(converted)
+                    except Exception:
+                        pass
+                    if expiry_ts:
+                        import datetime
+                        dt = datetime.datetime.fromtimestamp(int(expiry_ts))
+                        days_left = max(0, (dt - datetime.datetime.now()).days)
+                        expiry_text = f" — Expires {dt.strftime('%Y-%m-%d %H:%M')} (in {days_left} days)"
+        except Exception:
+            expiry_text = ""
+        self.status_label.setText(f"Cookie status: {'✅ Valid' if ok else '❌ Invalid'} (Pasted JSON){expiry_text}")
 
     def _do_autodetect(self):
         cookie_file, browser = show_cookie_detection_dialog(self)
         if cookie_file:
             self.txt_input.setText(cookie_file)
-            self.status_label.setText(f"Cookie status: ✅ Detected from {browser}")
+            # Include expiry if available
+            expiry_text = ""
+            try:
+                cm = CookieManager()
+                expiry_ts = cm.get_cookie_expiry(cookie_file)
+                if expiry_ts:
+                    import datetime
+                    dt = datetime.datetime.fromtimestamp(int(expiry_ts))
+                    days_left = max(0, (dt - datetime.datetime.now()).days)
+                    expiry_text = f" — Expires {dt.strftime('%Y-%m-%d %H:%M')} (in {days_left} days)"
+            except Exception:
+                expiry_text = ""
+            self.status_label.setText(f"Cookie status: ✅ Detected from {browser}{expiry_text}")
 
 
 def show_cookies_dialog(parent=None):
