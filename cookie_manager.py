@@ -8,7 +8,7 @@ from pathlib import Path
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
     QComboBox, QProgressBar, QListWidget, QListWidgetItem,
-    QMessageBox, QFileDialog, QCheckBox, QTextEdit, QLineEdit
+    QMessageBox, QFileDialog, QCheckBox, QTextEdit, QLineEdit, QGroupBox
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QSize
 from PyQt6.QtGui import QFont
@@ -1023,14 +1023,19 @@ class CookiesDialog(QDialog):
             self.disable_cb.setChecked(self._settings.get_disable_cookies())
         layout.addWidget(self.disable_cb)
 
-        # Auto-detect section
-        autodetect_row = QHBoxLayout()
+        # Auto-detect section (group box)
+        autodetect_group = QGroupBox("Auto-detect")
+        autodetect_group_layout = QHBoxLayout(autodetect_group)
         autodetect_btn = QPushButton("Auto-Detect Now")
         _btn_info(autodetect_btn)
         autodetect_btn.clicked.connect(self._do_autodetect)
-        autodetect_row.addWidget(autodetect_btn)
-        autodetect_row.addStretch()
-        layout.addLayout(autodetect_row)
+        autodetect_group_layout.addWidget(autodetect_btn)
+        autodetect_group_layout.addStretch()
+        layout.addWidget(autodetect_group)
+
+        # Manual sources (group box)
+        manual_group = QGroupBox("Manual sources")
+        manual_layout = QVBoxLayout(manual_group)
 
         # Manual .txt
         row_txt = QHBoxLayout()
@@ -1042,13 +1047,9 @@ class CookiesDialog(QDialog):
         btn_browse_txt = QPushButton("Browse")
         _btn_info(btn_browse_txt)
         btn_browse_txt.clicked.connect(self._browse_txt)
-        btn_test_txt = QPushButton("Test")
-        _btn_success(btn_test_txt)
-        btn_test_txt.clicked.connect(self._test_txt)
         row_txt.addWidget(self.txt_input)
         row_txt.addWidget(btn_browse_txt)
-        row_txt.addWidget(btn_test_txt)
-        layout.addLayout(row_txt)
+        manual_layout.addLayout(row_txt)
 
         # JSON file
         row_json = QHBoxLayout()
@@ -1060,13 +1061,9 @@ class CookiesDialog(QDialog):
         btn_browse_json = QPushButton("Browse JSON")
         _btn_info(btn_browse_json)
         btn_browse_json.clicked.connect(self._browse_json)
-        btn_test_json = QPushButton("Test JSON")
-        _btn_success(btn_test_json)
-        btn_test_json.clicked.connect(self._test_json)
         row_json.addWidget(self.json_input)
         row_json.addWidget(btn_browse_json)
-        row_json.addWidget(btn_test_json)
-        layout.addLayout(row_json)
+        manual_layout.addLayout(row_json)
 
         # Paste JSON
         row_paste = QHBoxLayout()
@@ -1074,13 +1071,21 @@ class CookiesDialog(QDialog):
         btn_paste = QPushButton("Paste JSON")
         _btn_info(btn_paste)
         btn_paste.clicked.connect(self._paste_json)
-        btn_test_pasted = QPushButton("Test Pasted")
-        _btn_success(btn_test_pasted)
-        btn_test_pasted.clicked.connect(self._test_pasted)
         row_paste.addWidget(btn_paste)
-        row_paste.addWidget(btn_test_pasted)
         row_paste.addStretch()
-        layout.addLayout(row_paste)
+        manual_layout.addLayout(row_paste)
+
+        # Centralized Test button
+        test_row = QHBoxLayout()
+        test_row.addStretch()
+        btn_test_current = QPushButton("Test Current")
+        _btn_success(btn_test_current)
+        btn_test_current.clicked.connect(self._test_current)
+        test_row.addWidget(btn_test_current)
+        test_row.addStretch()
+        manual_layout.addLayout(test_row)
+
+        layout.addWidget(manual_group)
 
         # Buttons
         btns = QHBoxLayout()
@@ -1205,7 +1210,26 @@ class CookiesDialog(QDialog):
         data = QApplication.clipboard().text()
         if data and (data.strip().startswith('{') or data.strip().startswith('[')):
             ok = test_cookies(data)
-            self.status_label.setText(f"Cookie status: {'✅ Valid' if ok else '❌ Invalid'} (Pasted JSON)")
+            # Show expiry as well
+            expiry_text = ""
+            try:
+                if ok:
+                    cm = CookieManager()
+                    converted = cm.convert_json_string_to_yt_dlp_format(data)
+                    if converted:
+                        expiry_ts = cm.get_cookie_expiry(converted)
+                        try:
+                            os.unlink(converted)
+                        except Exception:
+                            pass
+                        if expiry_ts:
+                            import datetime
+                            dt = datetime.datetime.fromtimestamp(int(expiry_ts))
+                            days_left = max(0, (dt - datetime.datetime.now()).days)
+                            expiry_text = f" — Expires {dt.strftime('%Y-%m-%d %H:%M')} (in {days_left} days)"
+            except Exception:
+                expiry_text = ""
+            self.status_label.setText(f"Cookie status: {'✅ Valid' if ok else '❌ Invalid'} (Pasted JSON){expiry_text}")
             if ok:
                 # Store pasted data into JSON field so it persists
                 self.json_input.setText(data)
@@ -1235,6 +1259,19 @@ class CookiesDialog(QDialog):
         except Exception:
             expiry_text = ""
         self.status_label.setText(f"Cookie status: {'✅ Valid' if ok else '❌ Invalid'} (Pasted JSON){expiry_text}")
+
+    def _test_current(self):
+        """Centralized test: prefers .txt if present; else JSON file; else pasted JSON in field."""
+        # Prefer .txt path
+        txt = (self.txt_input.text().strip() if hasattr(self, 'txt_input') else '')
+        if txt:
+            return self._test_txt()
+        # Next: JSON file path
+        js = (self.json_input.text().strip() if hasattr(self, 'json_input') else '')
+        if js and not (js.startswith('{') or js.startswith('[')):
+            return self._test_json()
+        # Lastly: treat content as pasted JSON
+        return self._test_pasted()
 
     def _do_autodetect(self):
         cookie_file, browser = show_cookie_detection_dialog(self)
