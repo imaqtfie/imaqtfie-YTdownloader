@@ -6,7 +6,7 @@ from settings import AppSettings
 
 class FormatChooserDialog(QDialog):
 	"""Simple pre-download format chooser dialog."""
-	def __init__(self, url: str, parent=None):
+	def __init__(self, url: str, parent=None, cookiefile: str | None = None):
 		super().__init__(parent)
 		self.url = url
 		self.settings = AppSettings()
@@ -38,6 +38,8 @@ class FormatChooserDialog(QDialog):
 		self._audio_row_index = None
 		self.available_rows = []  # (label, resolution_key, container, size_text)
 		self._loader = None
+		# Prefer explicitly provided cookiefile from controller to ensure chooser matches download auth state
+		self._provided_cookiefile = cookiefile
 		self._cookie_file_for_ydl = self._resolve_cookiefile()
 		# Loading indicator state
 		self._loading_row = None
@@ -366,9 +368,17 @@ class FormatChooserDialog(QDialog):
 
 	def _resolve_cookiefile(self) -> str | None:
 		"""Attempt to get a usable Netscape-format cookie file for yt-dlp.
-		Order: parent's current_cookie_file -> settings cookie txt -> convert JSON paths/strings via cookie_manager.
+		Order: provided cookiefile -> parent's current_cookie_file -> settings cookie txt -> convert JSON paths/strings via cookie_manager.
 		"""
 		try:
+			# 0) Explicit cookiefile provided by caller (controller)
+			try:
+				if getattr(self, '_provided_cookiefile', None):
+					import os
+					if os.path.exists(self._provided_cookiefile):
+						return self._provided_cookiefile
+			except Exception:
+				pass
 			parent = self.parent()
 			# 1) Controller-provided active cookie file
 			try:

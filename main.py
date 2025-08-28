@@ -1169,7 +1169,13 @@ You're getting close to your batch queue limit.
         try:
             if hasattr(self.ui, 'choose_format_checkbox') and self.ui.choose_format_checkbox.isChecked():
                 self.log_manager.log("DEBUG", f"Format chooser enabled, current resolution: '{resolution}'")
-                dlg = FormatChooserDialog(url, self.ui)
+                # Pass active cookie file explicitly so chooser lists formats under same auth as downloads
+                active_cookie = None
+                try:
+                    active_cookie = getattr(self, 'current_cookie_file', None)
+                except Exception:
+                    active_cookie = None
+                dlg = FormatChooserDialog(url, self.ui, cookiefile=active_cookie)
                 result = dlg.exec()
                 if result:
                     chosen_res, chosen_container, chosen_audio = dlg.get_selection()
