@@ -1175,15 +1175,23 @@ You're getting close to your batch queue limit.
                     chosen_res, chosen_container, chosen_audio = dlg.get_selection()
                     self.log_manager.log("DEBUG", f"Format chooser result: resolution='{chosen_res}', container='{chosen_container}', audio='{chosen_audio}'")
                     
-                    # Check if the format chooser returned a valid resolution
-                    if chosen_res and chosen_res in ["360p", "480p", "720p", "1080p", "Audio"]:
+                    # Accept any resolution like "<digits>p" (e.g., 2160p, 1440p, 240p) or the special "Audio"
+                    try:
+                        import re
+                        is_audio = (chosen_res == "Audio")
+                        is_height = isinstance(chosen_res, str) and re.match(r"^\d+p$", chosen_res or "") is not None
+                    except Exception:
+                        is_audio = (chosen_res == "Audio")
+                        is_height = False
+
+                    if chosen_res and (is_audio or is_height):
                         if chosen_res != resolution:
                             self.log_manager.log("INFO", f"Resolution changed from '{resolution}' to '{chosen_res}' via format chooser")
                         else:
                             self.log_manager.log("DEBUG", f"Resolution unchanged: '{resolution}'")
                         resolution = chosen_res
                     else:
-                        self.log_manager.log("WARNING", f"Format chooser returned invalid resolution: '{chosen_res}', keeping original: '{resolution}'")
+                        self.log_manager.log("WARNING", f"Format chooser returned unrecognized resolution: '{chosen_res}', keeping original: '{resolution}'")
                     
                     # If proceed_with_defaults is True, we intentionally keep current settings
                 else:
