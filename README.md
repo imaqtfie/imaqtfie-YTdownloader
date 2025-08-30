@@ -57,7 +57,7 @@ Cookies feature still being updated, so be patient.
 
 ## Supported Sites
 
-- YouTube (videos, playlists, live streams)
+- YouTube (videos, playlists, mix)
 
 ## License
 
